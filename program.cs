@@ -13,29 +13,26 @@ namespace CloudflareR2AwsSdkNet
 
         public static async Task Main(string[] args)
         {
-            // Enter your Cloudflare R2 API credentials below
-            // (See: https://developers.cloudflare.com/r2/api/tokens)
-            var accessKey = "<ACCESS_KEY_ID>";
-            var secretKey = "<SECRET_ACCESS_KEY>";
-            var accountId = "<ACCOUNT_ID>";
+            var accessKey = "";
+            var secretKey = "";
+            var accountId = "";
 
             var credentials = new BasicAWSCredentials(accessKey, secretKey);
             s3Client = new AmazonS3Client(credentials, new AmazonS3Config
             {
                 ServiceURL = $"https://{accountId}.r2.cloudflarestorage.com",
+                ForcePathStyle = true,
+                AuthenticationRegion = "auto",
             });
 
             Console.WriteLine("--- Cloudflare R2 with AWS SDK for .NET Demo ---\n");
 
             try
             {
-                // Uncomment the methods below to test different operations
-
-                await ListBuckets();
-
-                // await ListObjectsV2("my-bucket");
-                // await PutObject("my-bucket", @"C:\path\to\file.txt");
-                // await GetObject("my-bucket", "file.txt");
+                //await ListBuckets();
+                //await ListObjectsV2("gmbh");
+                //await PutObject("gmbh", @"D:\New folder\test.png");
+                await GetObject("gmbh", "test.png");
                 // GeneratePresignedUrl("my-bucket", "file.txt");
             }
             catch (Exception ex)
@@ -81,9 +78,13 @@ namespace CloudflareR2AwsSdkNet
             {
                 FilePath = filePath,
                 BucketName = bucketName,
+                Key = Path.GetFileName(filePath),
+                
+                
                 // These two flags are critical for compatibility with Cloudflare R2
                 DisablePayloadSigning = true,
-                DisableDefaultChecksumValidation = true
+                DisableDefaultChecksumValidation = true,
+                UseChunkEncoding = false
             };
 
             var response = await s3Client.PutObjectAsync(request);
@@ -101,7 +102,6 @@ namespace CloudflareR2AwsSdkNet
         static string? GeneratePresignedUrl(string bucketName, string key)
         {
             Console.WriteLine($"\nGenerating presigned URL for '{key}'...");
-            AWSConfigsS3.UseSignatureVersion4 = true;
             var presign = new GetPreSignedUrlRequest
             {
                 BucketName = bucketName,
